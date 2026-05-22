@@ -13,9 +13,9 @@ BG_DIR = "backgrounds"            # 640x640 背景库，先运行 resize_backgro
 
 # 2. 类别设置
 CLASSES = [
-    {"class_id": 0, "name": "偏低", "input_dir": "transparent/偏低", "file_prefix": "偏低", "start_num": 1, "end_num": 2},
-    {"class_id": 1, "name": "正常", "input_dir": "transparent/正常", "file_prefix": "正常", "start_num": 1, "end_num": 2},
-    {"class_id": 2, "name": "偏高", "input_dir": "transparent/偏高", "file_prefix": "偏高", "start_num": 1, "end_num": 2},
+    {"class_id": 0, "name": "偏低", "input_dir": "transparent/偏低", "file_prefix": "偏低", "start_num": 1, "end_num": 5},
+    {"class_id": 1, "name": "正常", "input_dir": "transparent/正常", "file_prefix": "正常", "start_num": 1, "end_num": 5},
+    {"class_id": 2, "name": "偏高", "input_dir": "transparent/偏高", "file_prefix": "偏高", "start_num": 1, "end_num": 5},
 ]
 
 # 3. 输出设置

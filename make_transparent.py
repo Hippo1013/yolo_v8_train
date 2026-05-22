@@ -8,7 +8,7 @@ RAW_DIR = Path("raw")
 OUTPUT_DIR = Path("transparent")
 CLASSES = ["偏低", "正常", "偏高"]
 START_NUM = 1
-END_NUM = 2
+END_NUM = 5
 
 
 def process_class(class_name):

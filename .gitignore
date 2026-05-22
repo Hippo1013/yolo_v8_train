@@ -35,14 +35,6 @@ predict.py
 test/
 各版本模型.md
 
-# Extra local raw/transparent samples outside the published 1-2 range
-raw/*/*3.png
-raw/*/*4.png
-raw/*/*5.png
-transparent/*/*3.png
-transparent/*/*4.png
-transparent/*/*5.png
-
 # Model weights and exported artifacts
 *.pt
 *.onnx
