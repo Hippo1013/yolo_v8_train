@@ -26,6 +26,7 @@ def main():
     model = YOLO(args.model)
 
     print("开始训练。训练过程中按 Ctrl+C 可以提前结束并保存当前结果。")
+    # 训练集已在 generate_data.py 中做过大量合成增强，这里只保留较轻的 YOLO 内置增强。
     model.train(
         data=args.data,
         epochs=args.epochs,

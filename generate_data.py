@@ -174,6 +174,7 @@ def generate_one_sample(obj_orig, bg_files, class_id, img_idx, sample_idx):
     bbox_orig = [paste_x, paste_y, paste_x + final_w, paste_y + final_h]
 
     # --- [Step 5: 增强 & 保存] ---
+    # albumentations 同时更新图像和 bbox，保证增强后的标签仍然对齐目标。
     img_np = np.array(comp_img)
     augmented = transform_pipeline(image=img_np, bboxes=[bbox_orig], class_labels=[class_id])
 
@@ -275,6 +276,7 @@ def main():
     if MAX_TOTAL_IMAGES is not None:
         print(f"   试生成上限: {MAX_TOTAL_IMAGES} 张")
 
+    # 依次生成三类数据，类别 ID 与 data.yaml 中的 names 顺序保持一致。
     total_success = 0
     for class_config in CLASSES:
         if MAX_TOTAL_IMAGES is not None and total_success >= MAX_TOTAL_IMAGES:

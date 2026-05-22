@@ -47,6 +47,8 @@ pip install -r requirement_yolov8_train.txt
 
 `requirement_yolov8_train.txt` 是当前 `yolo_v8_train` conda 环境的冻结结果。该环境用于运行数据处理、数据生成和 YOLOv8 训练脚本。
 
+本步骤主要使用 `conda` 管理 Python 环境，并通过 `pip` 安装 `ultralytics`、`torch`、`opencv-python`、`Pillow`、`albumentations`、`rembg` 等库；构建逻辑是先固定环境，再保证数据处理和训练脚本在同一依赖版本下运行。
+
 ## 2. 准备原数据
 
 原数据放在 `raw/` 目录下：
@@ -70,6 +72,8 @@ raw/
 
 这 15 张图片是后续合成训练数据的前景源图，其中每类前 2 张来自主办方原数据，其余图片来自 Google NanoBanana AI P 图结果。
 
+本步骤不依赖 Python 库，核心逻辑是按类别整理输入数据，并让文件名与后续脚本中的类别名、编号范围保持一致。
+
 ## 3. 提取透明前景
 
 ```bash
@@ -89,6 +93,8 @@ transparent/
 
 `transparent/` 中的图片会作为合成训练数据时的前景素材。
 
+本步骤主要使用 `rembg` 和 `Pillow`：`Pillow` 负责读取和保存图片，`rembg` 负责分割主体并生成带 alpha 通道的透明前景。
+
 ## 4. 从视频提取背景源
 
 ```bash
@@ -105,6 +111,8 @@ backgrounds_raw/
 
 `backgrounds_raw/` 是中间目录。如果直接使用项目中已有的 `backgrounds/`，可以跳过抽帧和背景缩放步骤。
 
+本步骤主要使用 `opencv-python`：通过 `cv2.VideoCapture` 读取视频流，再按固定帧间隔用 `cv2.imwrite` 保存背景源图。
+
 ## 5. 统一背景尺寸
 
 ```bash
@@ -120,6 +128,8 @@ backgrounds/
 ```
 
 `backgrounds/` 是最终背景库，`generate_data.py` 会直接从这里随机选择背景。项目中已包含一批处理好的背景图；如果不重新抽帧，可以直接使用现有 `backgrounds/`。
+
+本步骤主要使用 `Pillow`：先对背景源图做居中正方形裁剪，再统一缩放到 `640x640`，保证后续合成数据尺寸稳定。
 
 ## 6. 生成 YOLO 训练集
 
@@ -154,6 +164,8 @@ dataset/
 - 小目标颜色交界软化、对比度和饱和度轻微降低。
 
 `dataset/` 是训练集输出目录，实际训练图片和标签会在运行 `generate_data.py` 后生成。
+
+本步骤主要使用 `Pillow`、`numpy`、`opencv-python` 和 `albumentations`：先用 `Pillow` 合成透明前景和背景，再用 `albumentations` 做图像增强，最后用 OpenCV 保存图片并同步写出 YOLO 标签。
 
 ## 7. 训练 YOLOv8 模型
 
@@ -203,6 +215,8 @@ runs/train/<name>/
 runs/train/<name>/weights/best.pt
 ```
 
+本步骤主要使用 `ultralytics` 和 `torch`：`ultralytics.YOLO` 加载预训练权重并读取 `data.yaml`，底层由 PyTorch 在 GPU 或 CPU 上执行训练。
+
 ## 8. 将权重复制到机器狗主机
 
 训练完成后，将 `best.pt` 复制到机器狗主机的推理工程中。例如：
@@ -212,6 +226,8 @@ scp runs/train/v1_yolov8s/weights/best.pt dog@<机器狗主机IP>:/home/dog/dog_
 ```
 
 本项目负责 Windows 侧训练流水线。机器狗主机上的实时推理脚本和运行环境应在机器狗主机对应工程中维护。
+
+本步骤通常使用 `scp` 或其他文件传输工具，不涉及 Python 代码；核心逻辑是把训练阶段产出的 `best.pt` 作为推理阶段的模型输入。
 
 ## 9. Windows 本机 RealSense 测试
 
@@ -228,6 +244,8 @@ python realsense_live_test.py
 ```python
 MODEL_PATH = Path("runs/detect/runs2/train/v1.1_yolov8s/weights/best.pt")
 ```
+
+本步骤主要使用 `pyrealsense2`、`opencv-python`、`ultralytics`、`torch`、`numpy` 和 `Pillow`：RealSense 负责采集彩色图和深度图，YOLO 负责检测，OpenCV 与 Pillow 负责实时显示和中文标注。
 
 ## 10. Git 提交范围
 

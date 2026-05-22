@@ -16,6 +16,7 @@ def process_class(class_name):
     output_dir = OUTPUT_DIR / class_name
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # 按类别批量抠图，保持 raw/ 与 transparent/ 的目录和文件名一致。
     print(f"开始处理 {class_name}: {input_dir} -> {output_dir}")
     for idx in range(START_NUM, END_NUM + 1):
         filename = f"{class_name}{idx}.png"
@@ -29,6 +30,7 @@ def process_class(class_name):
         try:
             print(f"正在抠图: {filename} ...", end="", flush=True)
             image = Image.open(input_path)
+            # rembg 输出带 alpha 通道的前景图，后续合成时用该通道作为粘贴 mask。
             transparent = remove(image)
             transparent.save(output_path)
             print("完成")

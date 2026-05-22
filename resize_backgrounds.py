@@ -10,6 +10,7 @@ IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 
 
 def center_crop_square(image):
+    # 先裁成正方形，再缩放到训练尺寸，避免背景被强行拉伸变形。
     width, height = image.size
     side = min(width, height)
     left = (width - side) // 2

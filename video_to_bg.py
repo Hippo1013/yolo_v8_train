@@ -19,13 +19,13 @@ def main():
     save_count = 0
     
     print(f"开始从 {VIDEO_PATH} 抽帧到 {OUTPUT_DIR} ...")
-    
+
     while True:
         ret, frame = cap.read()
         if not ret:
             break # 视频结束
-            
-        # 每隔 N 帧保存一张
+
+        # 固定间隔抽帧，减少相邻背景图过度重复。
         if frame_count % SAVE_EVERY_N_FRAMES == 0:
             save_name = OUTPUT_DIR / f"bg_frame_{save_count}.jpg"
             cv2.imwrite(str(save_name), frame)
