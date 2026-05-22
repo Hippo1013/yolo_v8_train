@@ -1,5 +1,33 @@
 # YOLOv8 仪表盘状态识别训练工程
 
+```text
+yolo_v8_train/
+├── backgrounds/                    # 640x640 背景图，供数据生成脚本随机选取
+│   ├── bg1.jpg
+│   ├── ...
+│   └── bg10.jpg
+├── raw/                            # 原始仪表盘前景图，每类 5 张
+│   ├── 偏低/
+│   ├── 正常/
+│   └── 偏高/
+├── transparent/                    # 使用 rembg 抠图后的透明前景图，每类 5 张
+│   ├── 偏低/
+│   ├── 正常/
+│   └── 偏高/
+├── dataset/                        # 训练集生成位置，仅提交 .gitkeep 占位
+│   └── .gitkeep
+├── bg_video.mp4                    # 用于抽取背景源的视频
+├── data.yaml                       # YOLO 数据集配置
+├── generate_data.py                # 合成训练数据并生成 YOLO 标签
+├── make_transparent.py             # 将 raw/ 中的仪表盘图片抠成透明前景
+├── README.md                       # 项目说明
+├── realsense_live_test.py          # Windows 本机 RealSense 实时测试脚本
+├── requirement_yolov8_train.txt    # yolo_v8_train 环境依赖冻结结果
+├── resize_backgrounds.py           # 将背景源裁剪缩放为 640x640
+├── train.py                        # YOLOv8 训练入口
+└── video_to_bg.py                  # 从 bg_video.mp4 抽帧生成背景源
+```
+
 本项目用于在 Windows 设备上训练 YOLOv8 仪表盘状态识别模型。训练完成后，将模型权重复制到机器狗主机，在机器狗主机上完成实时推理。
 
 识别类别为三类：
@@ -31,7 +59,7 @@ raw/
 └── 偏高/
 ```
 
-主办方原始提供的数据为每类 2 张仪表盘图片。为了增加前景素材数量，本项目使用 Google NanoBanana 生图对每类仪表盘进行了 AI 扩图，将每类扩展到 5 张图片。
+主办方原始提供的数据为每类 2 张仪表盘图片。为了增加前景素材数量，本项目使用 Google NanoBanana 生图对每类仪表盘进行了 AI P 图，将每类扩展到 5 张图片。
 
 每个状态目录下放置 5 张仪表盘图片，文件名分别为：
 
@@ -41,7 +69,7 @@ raw/
 偏高1.png, 偏高2.png, 偏高3.png, 偏高4.png, 偏高5.png
 ```
 
-这 15 张图片是后续合成训练数据的前景源图，其中每类前 2 张来自主办方原数据，其余图片来自 Google NanoBanana 扩图结果。
+这 15 张图片是后续合成训练数据的前景源图，其中每类前 2 张来自主办方原数据，其余图片来自 Google NanoBanana AI P 图结果。
 
 ## 3. 提取透明前景
 
