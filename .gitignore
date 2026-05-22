@@ -16,10 +16,32 @@ Thumbs.db
 
 # YOLO / training outputs
 datasets/
+datasets_new/
+backgrounds_raw/
+backgrounds_resized/
+row/
 runs/
 runs0/
 check_results/
 *.cache
+dataset/*
+!dataset/.gitkeep
+
+# Local helper scripts and notes outside the published training pipeline
+check_data.py
+check_gpu.py
+check_libs.py
+predict.py
+test/
+各版本模型.md
+
+# Extra local raw/transparent samples outside the published 1-2 range
+raw/*/*3.png
+raw/*/*4.png
+raw/*/*5.png
+transparent/*/*3.png
+transparent/*/*4.png
+transparent/*/*5.png
 
 # Model weights and exported artifacts
 *.pt
