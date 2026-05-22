@@ -14,8 +14,7 @@ yolo_v8_train/
 │   ├── 偏低/
 │   ├── 正常/
 │   └── 偏高/
-├── dataset/                        # 训练集生成位置，仅提交 .gitkeep 占位
-│   └── .gitkeep
+├── dataset/                        # 训练集生成位置
 ├── bg_video.mp4                    # 用于抽取背景源的视频
 ├── data.yaml                       # YOLO 数据集配置
 ├── generate_data.py                # 合成训练数据并生成 YOLO 标签
@@ -104,7 +103,7 @@ python video_to_bg.py
 backgrounds_raw/
 ```
 
-`backgrounds_raw/` 是中间目录，不需要提交到 Git。仓库中保留的是最终处理后的 `backgrounds/`。
+`backgrounds_raw/` 是中间目录。如果直接使用项目中已有的 `backgrounds/`，可以跳过抽帧和背景缩放步骤。
 
 ## 5. 统一背景尺寸
 
@@ -120,7 +119,7 @@ python resize_backgrounds.py
 backgrounds/
 ```
 
-`backgrounds/` 是最终背景库，`generate_data.py` 会直接从这里随机选择背景。仓库中已包含一批处理好的背景图；如果不重新抽帧，可以直接使用现有 `backgrounds/`。
+`backgrounds/` 是最终背景库，`generate_data.py` 会直接从这里随机选择背景。项目中已包含一批处理好的背景图；如果不重新抽帧，可以直接使用现有 `backgrounds/`。
 
 ## 6. 生成 YOLO 训练集
 
@@ -154,7 +153,7 @@ dataset/
 - 高斯模糊、运动模糊、噪声、亮度/对比度变化；
 - 小目标颜色交界软化、对比度和饱和度轻微降低。
 
-`dataset/` 目录只提交一个占位文件，实际生成的训练图片和标签不提交到 Git。
+`dataset/` 是训练集输出目录，实际训练图片和标签会在运行 `generate_data.py` 后生成。
 
 ## 7. 训练 YOLOv8 模型
 
@@ -212,7 +211,7 @@ runs/train/<name>/weights/best.pt
 scp runs/train/v1_yolov8s/weights/best.pt dog@<机器狗主机IP>:/home/dog/dog_ws/dashboard_recognition/models/
 ```
 
-本仓库负责 Windows 侧训练流水线。机器狗主机上的实时推理脚本和运行环境应在机器狗主机对应工程中维护。
+本项目负责 Windows 侧训练流水线。机器狗主机上的实时推理脚本和运行环境应在机器狗主机对应工程中维护。
 
 ## 9. Windows 本机 RealSense 测试
 
