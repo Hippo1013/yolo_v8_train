@@ -1,0 +1,13 @@
+path: dataset
+train: train/images
+val: val/images
+
+nc: 7
+names:
+  0: dashboard_low
+  1: dashboard_normal
+  2: dashboard_high
+  3: letter_A
+  4: letter_B
+  5: letter_C
+  6: letter_D
