@@ -1,33 +1,15 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-.Python
-.venv/
-venv/
-env/
+# Regenerated dataset and preview outputs
+dataset/
+previews_train/
 
-# IDE / OS
-.idea/
-.vscode/
-.DS_Store
-Thumbs.db
-
-# YOLO / training outputs
-datasets/
+# Training outputs and exported model artifacts
 runs/
-runs0/
-check_results/
-*.cache
-
-# Model weights and exported artifacts
 *.pt
 *.onnx
 *.engine
-*.tflite
-*.mlmodel
-*.torchscript
 
-# Local logs
+# Python cache and local logs
+__pycache__/
+*.py[cod]
+*.cache
 *.log

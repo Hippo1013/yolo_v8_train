@@ -1,16 +1,13 @@
-# 1. 数据集根目录 (建议写绝对路径，防止找不到)
-path: E:/智创赛/workstation/yolo_v8_train/datasets
-
-# 2. 训练集和验证集路径
-# (因为我们是合成数据，没有单独拆分验证集，暂时都指向 train/images)
+path: dataset
 train: train/images
-val: train/images
+val: val/images
 
-# 3. 类别数量 (3类：偏低、正常、偏高)
-nc: 3
-
-# 4. 类别名称 (必须对应你的 ID: 0, 1, 2)
+nc: 7
 names:
-  0: low     # 偏低
-  1: normal  # 正常
-  2: high    # 偏高
+  0: dashboard_low
+  1: dashboard_normal
+  2: dashboard_high
+  3: letter_A
+  4: letter_B
+  5: letter_C
+  6: letter_D

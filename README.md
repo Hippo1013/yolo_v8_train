@@ -1,66 +1,123 @@
-# YOLOv8 仪表状态识别训练工程
+# YOLOv8 v2 仪表盘与字母联合检测训练工程
 
-本项目用于构建 YOLOv8 目标检测训练流水线，面向 `偏低`、`正常`、`偏高` 三类仪表状态识别。数据集主要通过少量前景素材、背景图和随机增强自动合成，并输出 YOLO 格式训练数据。
+本目录用于生成并训练一个同时检测 3 种仪表盘状态和 4 个字母目标的 YOLOv8 检测模型。
 
-## 项目结构
-
-```text
-yolo_v8_train/
-├── row/                    # 原始前景素材
-├── transparent/            # 抠图后的透明前景素材
-├── backgrounds/            # 背景图
-├── test/                   # 测试图片
-├── data.yaml               # YOLO 数据集配置
-├── make_transparent.py     # 使用 rembg 批量抠图
-├── video_to_bg.py          # 从视频抽帧生成背景图
-├── generate_data.py        # 合成训练图片并生成 YOLO 标签
-├── check_data.py           # 抽查标签框是否正确
-├── train.py                # YOLOv8 训练入口
-└── predict.py              # 推理测试入口
-```
-
-`datasets/`、`runs/`、`check_results/` 和模型权重文件默认不提交到 Git，因为它们属于可再生成的数据、训练结果或较大的二进制产物。
-
-## 环境依赖
-
-建议使用 Python 虚拟环境安装依赖：
-
-```bash
-pip install ultralytics opencv-python pillow numpy albumentations rembg
-```
-
-如果使用 GPU 训练，还需要安装与你的 CUDA 环境匹配的 PyTorch。
-
-## 数据准备流程
-
-1. 将原始前景素材放入 `row/偏低`、`row/正常`、`row/偏高`。
-2. 修改 `make_transparent.py` 中的 `INPUT_DIR`、`OUTPUT_DIR`、`FILE_PREFIX`，按类别运行抠图。
-3. 将背景图放入 `backgrounds/`，或运行 `video_to_bg.py` 从 `bg_video.mp4` 抽帧生成背景图。
-4. 修改 `generate_data.py` 中的 `INPUT_DIR`、`FILE_PREFIX`、`CLASS_ID`，按类别生成合成训练数据。
-5. 运行 `check_data.py` 抽查生成标签框是否正确。
-
-类别 ID 对应关系：
+类别定义：
 
 ```text
-0: low     # 偏低
-1: normal  # 正常
-2: high    # 偏高
+0: dashboard_low
+1: dashboard_normal
+2: dashboard_high
+3: letter_A
+4: letter_B
+5: letter_C
+6: letter_D
 ```
 
-## 训练
+## 数据生成策略
 
-确认 `data.yaml` 中的 `path` 指向当前机器上的 `datasets` 目录，然后运行：
+`generate_data.py` 会生成三类样本：
 
-```bash
-python train.py
+```text
+dashboard-only: 一张图只有 1 个仪表盘
+letter-only:    一张图只有 1 个字母
+pair:           一张图同时有 1 个仪表盘和 1 个字母
 ```
 
-训练结果会输出到 `runs/train/meter_model`。
+默认数据量：
 
-## 推理
+```text
+train:
+- 仪表盘单目标：每类 500 张，共 1500 张
+- 字母单目标：每类 800 张，共 3200 张
+- 双目标组合：12 个组合，每组合 300 张，共 3600 张
+- 合计 8300 张图
 
-训练完成后，根据 `predict.py` 中的模型路径和测试图片路径进行推理：
+val:
+- 仪表盘单目标：每类 150 张，共 450 张
+- 字母单目标：每类 220 张，共 880 张
+- 双目标组合：12 个组合，每组合 80 张，共 960 张
+- 合计 2290 张图
+```
+
+仪表盘目标的旋转、缩放、拉伸、小目标降质等参数与 `yolo_v8_train/generate_data.py` 保持一致。字母目标不做旋转，不做水平/垂直翻转；只保留尺度、轻微透视、光照、噪声、模糊和压缩等增强。双目标图生成时会检查两个 YOLO 标注框，默认要求两个框之间至少保留 `8px` 间隔，避免相交或贴边。
+
+## 生成数据
+
+请使用现有 `yolo_v8_train` conda 环境：
 
 ```bash
-python predict.py
+conda activate yolo_v8_train
+cd yolo_v8_train_v2
+python generate_data.py
+```
+
+生成结果：
+
+```text
+dataset/
+├── train/
+│   ├── images/
+│   └── labels/
+└── val/
+    ├── images/
+    └── labels/
+```
+
+## 生成预览图
+
+```bash
+python preview_dataset.py --split train --count 10
+```
+
+默认输出到：
+
+```text
+previews_train/
+```
+
+## 校验数据集
+
+```bash
+python validate_dataset.py
+```
+
+该脚本会统计 `train/val` 的图片数、标注文件数、各类别目标数，并检查双目标样本中的两个标注框是否相交。
+
+## 训练模型
+
+先训练 `yolov8n.pt`：
+
+```bash
+python train.py --model yolov8n.pt --name v2_yolov8n
+```
+
+再训练 `yolov8s.pt`：
+
+```bash
+python train.py --model yolov8s.pt --name v2_yolov8s
+```
+
+默认训练参数：
+
+```text
+epochs=180
+patience=35
+imgsz=640
+batch=16
+workers=4
+device=0
+mosaic=0.3
+close_mosaic=15
+degrees=0.0
+fliplr=0.0
+flipud=0.0
+mixup=0.0
+copy_paste=0.0
+```
+
+训练结果默认保存到：
+
+```text
+runs/train/<name>/weights/best.pt
 ```

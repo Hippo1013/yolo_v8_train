@@ -1,37 +1,83 @@
+import argparse
+from pathlib import Path
+
 from ultralytics import YOLO
 
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Train YOLOv8 v2 detector for dashboard states and letters.")
+    parser.add_argument("--model", default="yolov8n.pt", help="Base model, for example yolov8n.pt or yolov8s.pt.")
+    parser.add_argument("--data", type=Path, default=SCRIPT_DIR / "data.yaml")
+    parser.add_argument("--project", type=Path, default=SCRIPT_DIR / "runs" / "train")
+    parser.add_argument("--name", default=None, help="Run name. Default is derived from the base model.")
+    parser.add_argument("--epochs", type=int, default=180)
+    parser.add_argument("--patience", type=int, default=35)
+    parser.add_argument("--imgsz", type=int, default=640)
+    parser.add_argument("--batch", type=int, default=16)
+    parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--device", default="0")
+    parser.add_argument("--exist-ok", action="store_true")
+    parser.add_argument("--resume", type=Path, default=None, help="Resume from a previous last.pt checkpoint.")
+    return parser.parse_args()
+
+
+def default_run_name(model_name):
+    stem = Path(model_name).stem
+    return f"dashboard_letter_{stem}_v2"
+
+
 def main():
-    # 1. 加载预训练模型
-    # yolov8s.pt 是小号版 (Small)，速度和精度平衡，适合机器狗这种边缘设备
-    # 第一次运行会自动从网上下载这个文件，不用担心
-    print("🚀 正在加载 YOLOv8 Small 模型...")
-    model = YOLO('yolov8s.pt') 
+    args = parse_args()
+    if args.resume is not None:
+        resume_path = args.resume.resolve()
+        if not resume_path.exists():
+            raise FileNotFoundError(f"Resume checkpoint not found: {resume_path}")
 
-    # 2. 开始训练 (让 RTX 4050 火力全开)
-    print("🔥 开始训练！(训练过程中按 Ctrl+C 可以提前结束并保存)")
-    
-    results = model.train(
-        data='data.yaml',   # 指定刚才写的配置文件
-        epochs=150,         # 训练 150 轮 (通常 50-100 轮就能收敛得很好)
-        imgsz=640,          # 图片大小 (标准 640x640)
-        device=0,           # device=0 代表使用第一块显卡 (你的 RTX 4050)
-        batch=16,           # 批次大小 (4050 显存 6G，设 16 比较稳，如果报错 OOM 就改成 8)
-        workers=4,          # 数据加载线程数
-        project='runs/train', # 结果保存在 runs/train 目录下
-        name='meter_model',   # 这一次训练任务的名字
-        exist_ok=True,        # 如果文件夹已存在，允许覆盖(或追加)
-        
-        # 增强设置 (因为我们已经手动增强过数据了，这里可以稍微关小一点自带的增强)
-        degrees=0.0,        # 关闭自带旋转 (我们自己转过了)
-        mosaic=1.0,         # 开启马赛克增强 (对小目标很有用)
+        print(f"resuming training from: {resume_path}")
+        model = YOLO(str(resume_path))
+        model.train(resume=True)
+        print("resume training finished; validating best available weights")
+        model.val()
+        return
+
+    data_path = args.data.resolve()
+    project_path = args.project.resolve()
+    run_name = args.name or default_run_name(args.model)
+
+    if not data_path.exists():
+        raise FileNotFoundError(f"Dataset yaml not found: {data_path}")
+
+    print(f"loading base model: {args.model}")
+    print(f"dataset yaml: {data_path}")
+    print(f"run name: {run_name}")
+
+    model = YOLO(args.model)
+    model.train(
+        data=str(data_path),
+        epochs=args.epochs,
+        patience=args.patience,
+        imgsz=args.imgsz,
+        device=args.device,
+        batch=args.batch,
+        workers=args.workers,
+        project=str(project_path),
+        name=run_name,
+        exist_ok=args.exist_ok,
+        degrees=0.0,
+        mosaic=0.3,
+        close_mosaic=15,
+        mixup=0.0,
+        copy_paste=0.0,
+        fliplr=0.0,
+        flipud=0.0,
     )
-    
-    print("✅ 训练完成！")
-    
-    # 3. 自动验证一下效果
-    print("📊 正在进行最终验证...")
-    metrics = model.val()
 
-if __name__ == '__main__':
-    # Windows 下多线程训练必须加这行保护，否则会报错
+    print("training finished; validating best available weights")
+    model.val(data=str(data_path), imgsz=args.imgsz, device=args.device, batch=args.batch)
+
+
+if __name__ == "__main__":
     main()
